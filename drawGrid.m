@@ -3,7 +3,7 @@ function d = drawGrid(point, bigDelta, color)
     y = point(2);
     smallDelta = min([bigDelta, bigDelta*bigDelta]);
     
-    drawFrame(x, y, bigDelta, color);
+    %drawFrame(x, y, bigDelta, color);
     drawMesh(x, y, bigDelta, smallDelta, color);
     % we draw the current X later so it does not get overwritten
     % by another mesh.

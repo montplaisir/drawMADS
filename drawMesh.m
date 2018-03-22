@@ -19,21 +19,18 @@ function d = drawMesh(x, y, bigDelta, smallDelta, color)
     ymax = y1;
 
     % draw lines to form a mesh.
-    % vertical lines
+    % points on vertical frame lines
     ptWidth = 0.75;
     for v = xmin:smallDelta:xmax
-    %    line([v,v], [ymin,ymax], 'Color', color);
         % Instead of drawing the whole grid, only indicate the points on
         % the grid that are interesting for us. The inside of the grid is
         % never used.
-        line([v,v], [ymin-ptWidth,ymin+ptWidth], 'Color', color);
-        line([v,v], [ymax-ptWidth,ymax+ptWidth], 'Color', color);      
+        drawMeshPoint(v, ymin, color);
+        drawMeshPoint(v, ymax, color);
     end
-    %horizontal lines
+    %points on horizontal frame lines
     for h = ymin:smallDelta:ymax
-        %line([xmin,xmax], [h,h], 'Color', color)
-        line([xmin-ptWidth,xmin+ptWidth], [h,h], 'Color', color)
-        line([xmax-ptWidth,xmax+ptWidth], [h,h], 'Color', color)
-
+        drawMeshPoint(xmin, h, color);
+        drawMeshPoint(xmax, h, color);
     end
 end

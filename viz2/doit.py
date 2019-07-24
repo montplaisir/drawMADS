@@ -146,6 +146,24 @@ def writeHeader(outfile):
     outfile.write("plot (x,y1,x,y2)\n")
     outfile.write("xlim([-2 40])\n")
     outfile.write("ylim([-2 30])\n")
+    #end writeHeader
+
+
+def writeIter(outfile, xi, di, color):
+    outfile.write("color=" + str(color)+";")
+    outfile.write(" r1="+str(di[0])+"; r2="+str(di[1])+";")
+    outfile.write(" px="+str(xi[0])+"; py="+str(xi[1])+";")
+    outfile.write(" rectangle('Position',[px-r1 py-r2 r1*2 r2*2], 'FaceColor', color, 'EdgeColor', color);")
+    outfile.write(" pause(0.03); figure(fId); frame = getframe(gcf); writeVideo(writerObj,frame);")
+    outfile.write("\n") 
+    ###color=[0.5037214542,0,0]; r1=0.0010000000; r2=0.0010000000; px=3.0370000000; py=0.3750000000; rectangle('Position',[px-r1 py-r2 r1*2 r2*2], 'FaceColor', color, 'EdgeColor', color);pause(0.03);figure(fId);frame = getframe(gcf);writeVideo(writerObj,frame);
+
+    #end writeIter
+
+
+def writeEnd(outfile):
+    outfile.write("plot (x,y1,x,y2)\n")
+    outfile.write("hold\n")
 
 
 def computeColorFeas(f, minf, maxf):
@@ -157,12 +175,13 @@ def computeColorFeas(f, minf, maxf):
         print("Warning: f (" + str(f) + ") > maxf (" + str(maxf) + "). This should not happen.")
         f = maxf
 
-    val = (maxf-f) / (2*(maxf-minf));
-    r = val + 0.5;
-    g = 0.5 - val;
-    b = 0.5 - val;
+    val = (maxf-f) / (2*(maxf-minf))
+    r = val + 0.5
+    g = 0.5 - val
+    b = 0.5 - val
 
     return [r, g, b]
+    #end computeColorFeas
     
 
 def computeColorInf(h, minh, maxh):
@@ -173,15 +192,22 @@ def computeColorInf(h, minh, maxh):
     elif (h > maxh):
         print("Warning: h (" + str(h) + ") > maxh (" + str(maxh) + "). This should not happen.")
         h = maxh
+    val = (maxh-h) / (2*(maxh-minh))
+    r = val
+    g = val
+    b = val
+
+    return [r, g, b]
+    #end computeColorInf
 
 
 # Input: stats file with format: OBJ CONS_H SOL MESH_SIZE
 # MESH_SIZE and SOL each have 2 values (DIMENSION=2).
-[f, h, x1, x2, x, d1, d2, d, nbbbe] = readInfile("stats.txt", ["OBJ", "CONS_H", "SOL", "MESH_SIZE"]);
+[f, h, x1, x2, x, d1, d2, d, nbbbe] = readInfile("stats.txt", ["OBJ", "CONS_H", "SOL", "MESH_SIZE"])
 [minf, maxf, minh, maxh, minfforminh] = computeMinMax(f, h, x, d)
 [xbestfeas, xbestinf] = findBestXFeasInf(minf, minh, minfforminh)
 
-color = computeColorFeas(-0.0005, minf, maxf)
+color = computeColorInf(251200, minh, maxh)
 print(color)
 
 
@@ -190,6 +216,17 @@ print(color)
 outfile = open("v2.m", "w")
 
 writeHeader(outfile)
+
+for i in range(0, nbbbe):
+    xi = x[i]
+    di = d[i]
+    if (h[i] == 0):
+        color = computeColorFeas(f[i], minf, maxf)
+    else:
+        color = computeColorInf(h[i], minh, maxh)
+    writeIter(outfile, xi, di, color)
+
+writeEnd(outfile)
 
 outfile.close()
 

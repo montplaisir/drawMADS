@@ -3,6 +3,10 @@ import numpy as np
 
 #Reading an avi file does not work on my computer, so I am not sure if this works.
 writeMovie = False
+# Variation of the scaling
+# scaleLinear False is not tested much, needs adjustments
+# The true need is for a scaling based on the current mesh size
+scaleLinear = True
 
 def readInfile(statsFileName, syntax):
     infile = open("stats.txt", "r")
@@ -198,8 +202,15 @@ def computeRescale(center, nbbbe, bbe, di, mind, maxd):
     val = 2*[None]  # Lists with two values, to be filled next
     xlim = 2*[None]
     ylim = 2*[None]
-    val[0] = (B[0]*bbe + A[0]*(nbbbe-bbe-1)) / (nbbbe-1)
-    val[1] = (B[1]*bbe + A[1]*(nbbbe-bbe-1)) / (nbbbe-1)
+    #val is between A and B
+    # It would be nice to take di into account, but not doing this right now
+    if scaleLinear:
+        val[0] = (B[0]*bbe + A[0]*(nbbbe-bbe-1)) / (nbbbe-1)
+        val[1] = (B[1]*bbe + A[1]*(nbbbe-bbe-1)) / (nbbbe-1)
+    else:
+        val[0] = (A[0]-B[0])/(bbe+1)+B[0]
+        val[1] = (A[1]-B[1])/(bbe+1)+B[1]
+    #print(str(di)+" "+str(val))
     xlim[0] = round(center[0] - val[0], 6)
     xlim[1] = round(center[0] + val[0], 6)
     ylim[0] = round(center[1] - val[1], 6)
@@ -327,15 +338,15 @@ def doMadsFile():
     writeDelay(outfile, 1)
 
     # Zoom out
-    # Not quite working yet. Problem with writeFunc (see in loop above),
-    # among other things.
-    for k in range(1,nbbbe-200,((nbbbe-200)/20)):
-        bbe = nbbbe-k
-        writeDelay(outfile, 0.01);
-        [xlim, ylim] = computeRescale(center, nbbbe, bbe, d[bbe], mind, maxd)
-        writeRescale(outfile, xlim, ylim)
-        writeFunc(outfile, xlim)
-        writeEnd(outfile, xbestfeas, xbestinf, [k*max(1e-4,mind[0]), k*max(1e-4,mind[1])], delay)
+    # Not tuned for nonlinear scaling, so skip in that case
+    if scaleLinear:
+        for k in range(1,nbbbe-200,((nbbbe-200)/20)):
+            bbe = nbbbe-k
+            writeDelay(outfile, 0.01);
+            [xlim, ylim] = computeRescale(center, nbbbe, bbe, d[bbe], mind, maxd)
+            writeRescale(outfile, xlim, ylim)
+            writeFunc(outfile, xlim)
+            writeEnd(outfile, xbestfeas, xbestinf, [k*max(1e-4,mind[0]), k*max(1e-4,mind[1])], delay)
 
     outfile.close()
 
